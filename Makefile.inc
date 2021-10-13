@@ -95,56 +95,9 @@ COREBOOT_BLOBS_DIR := $(realpath $(COREBOOT_BLOBS_DIR))
 endif
 
 UROOT_BASE_CMDS ?= \
-	boot/fbnetboot \
-	boot/localboot \
-	boot/systemboot \
-	core/cat \
-	core/chmod \
-	core/chroot \
-	core/cmp \
-	core/cp \
-	core/date \
-	core/dhclient \
-	core/dd \
-	core/df \
-	core/dirname \
-	core/dmesg \
-	core/echo \
-	core/elvish \
-	core/find \
-	core/free \
-	core/grep \
-	core/hostname \
-	core/id \
-	core/init \
-	core/insmod \
-	core/ip \
-	core/kexec \
-	core/kill \
-	core/ln \
-	core/ls \
-	core/lsmod \
-	core/mkdir \
-	core/mknod \
-	core/mount \
-	core/mv \
-	core/ntpdate \
-	core/ping \
-	core/ps \
-	core/rm \
-	core/rmmod \
-	core/sleep \
-	core/shutdown \
-	core/sync \
-	core/tail \
-	core/tee \
-	core/umount \
-	core/uname \
-	core/wget \
-	exp/cbmem \
-	exp/dmidecode \
-	exp/modprobe \
-	exp/ipmidump
+	core \
+	github.com/u-root/u-root/cmds/boot/{fbnetboot,localboot,systemboot} \
+	github.com/u-root/u-root/cmds/exp/{cbmem,dmidecode,modprobe,ipmidump} \
 
 UROOT_ADDITIONAL_CMDS ?=
 
@@ -296,8 +249,8 @@ $(INITRAMFS_OUT): $(INITRAMFS_DEPS_FLAG) $(INITRAMFS_PATCH_FLAG)
 	GOPATH=$(INITRAMFS_BUILD_DIR)/gopath:$(UROOT_ADDITIONAL_GOPATH) \
 	  $(INITRAMFS_BUILD_DIR)/go/bin/go run github.com/u-root/u-root \
 	    -build=bb -o $@ -uinitcmd=$(UINIT_CMD) \
-	    $(addprefix -files=,$(BASE_FILES) $(UROOT_ADDITIONAL_FILES)) \
-	    $(addprefix github.com/u-root/u-root/cmds/,$(UROOT_BASE_CMDS)) $(UROOT_ADDITIONAL_CMDS) \
+	    $(UROOT_BASE_CMDS) \
+	    $(UROOT_ADDITIONAL_CMDS) \
 	  || { rm -f $@; exit 1; }
 
 ifeq "$(ALWAYS_BUILD_INITRAMFS)" "1"
