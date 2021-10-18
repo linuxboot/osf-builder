@@ -16,6 +16,9 @@ MAKEFLAGS += --warn-undefined-variables
 ifndef PLATFORM
 $(error Please define PLATFORM)
 endif
+ifndef ARCH
+$(error Please define ARCH)
+endif
 ifndef OSF_BUILDER_DIR
 $(error Please define OSF_BUILDER_DIR)
 endif
@@ -25,6 +28,7 @@ endif
 ifndef PATCHES_DIR
 $(error Please define PATCHES_DIR)
 endif
+
 # If defined, specifies URL overrides to be applied when fetching deps.
 URL_OVERRIDES ?=
 # Version of the firmware being built.
@@ -39,7 +43,7 @@ ROM_OUT ?= $(PLATFORM_BUILD_DIR)/osf-$(PLATFORM).rom
 # Absolutize CONFIGS_DIR
 CONFIGS_DIR := $(realpath $(CONFIGS_DIR))
 CONFIG ?= $(CONFIGS_DIR)/config-$(PLATFORM).json
-KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel.config
+KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel-$(ARCH).config
 COREBOOT_CONFIG ?= $(CONFIGS_DIR)/coreboot.config-$(PLATFORM)
 TOOLS_DIR := $(realpath $(OSF_BUILDER_DIR)/tools)
 URL_OVERRIDES_ABS = $(realpath $(URL_OVERRIDES))
@@ -65,7 +69,7 @@ INITRAMFS_BUILD_DIR := $(PLATFORM_BUILD_DIR)/initramfs
 INITRAMFS_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.initramfs-deps
 INITRAMFS_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.initramfs-patch
 ifndef INITRAMFS_OUT
-INITRAMFS_OUT := $(INITRAMFS_BUILD_DIR)/initramfs_linuxboot.amd64.cpio
+INITRAMFS_OUT := $(INITRAMFS_BUILD_DIR)/initramfs_linuxboot.$(ARCH).cpio
 endif
 # By default, build initramfs but a prebuilt one can be provided via INITRAMFS_IN.
 INITRAMFS_IN ?= $(INITRAMFS_OUT)
