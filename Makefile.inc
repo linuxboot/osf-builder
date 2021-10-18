@@ -93,6 +93,7 @@ COREBOOT_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-deps
 COREBOOT_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-patch
 COREBOOT_TOOLCHAIN_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-toolchain
 COREBOOT_TOOLCHAIN_CACHE_ENABLE ?= 1
+COREBOOT_VPD_SUPPORT ?= 1
 # coreboot Intel blobs
 ifdef COREBOOT_BLOBS_DIR
 COREBOOT_BLOBS_DIR := $(realpath $(COREBOOT_BLOBS_DIR))
@@ -120,9 +121,11 @@ build: $(ROM_OUT)
 
 # Main output product - firmware with VPD variables.
 $(ROM_OUT): $(COREBOOT_OUT)
+ifeq "$(COREBOOT_VPD_SUPPORT)" "1"
 	$(VPD_TOOL) -f "$<" -O -i RO_VPD -s internal_versions="`cat $(FINAL_CONFIG_OUT)`"
 	[ -z "$(VERSION)" ] || $(VPD_TOOL) -f "$<" -i RO_VPD -s firmware_version=$(VERSION)
 	$(VPD_TOOL) -f "$<" -O -i RW_VPD || true # Format RW_VPD region, if present.
+endif
 	cp "$<" "$@"
 	@echo '***' >&2
 	@echo '*** Build done, $@' >&2
