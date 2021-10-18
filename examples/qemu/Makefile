@@ -4,7 +4,12 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-PLATFORM := qemu-x86_64
+ARCH ?= $(shell uname -m)
+ifeq ($(ARCH), x86_64)
+ARCH = amd64
+endif
+
+PLATFORM := qemu-$(ARCH)
 
 OSF_BUILDER_DIR := ../..
 
