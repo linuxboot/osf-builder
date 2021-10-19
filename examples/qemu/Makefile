@@ -11,6 +11,15 @@ else
 CROSS_COMPILING := 0
 endif
 
+ifeq ($(ARCH), ppc64le)
+COREBOOT_TOOLCHAIN_ARCH=$(ARCH)
+GOARCH := $(ARCH)
+LINUX_ARCH := powerpc
+LINUX_IMAGE_RELATIVE_PATH := arch/powerpc/boot/zImage
+LINUX_GCC_TUPLE := powerpc64-linux-gnu-
+PLATFORM := qemu-$(ARCH)
+QEMU_SYSTEM := qemu-system-$(ARCH)
+endif
 ifeq ($(ARCH), x86_64)
 COREBOOT_TOOLCHAIN_ARCH := i386
 LINUX_ARCH := $(ARCH)
