@@ -94,10 +94,12 @@ ifdef COREBOOT_BLOBS_DIR
 COREBOOT_BLOBS_DIR := $(realpath $(COREBOOT_BLOBS_DIR))
 endif
 
+UROOT_BOOT_CMDS := fbnetboot localboot systemboot
+UROOT_EXP_CMDS := cbmem dmidecode modprobe ipmidump
 UROOT_BASE_CMDS ?= \
 	core \
-	github.com/u-root/u-root/cmds/boot/{fbnetboot,localboot,systemboot} \
-	github.com/u-root/u-root/cmds/exp/{cbmem,dmidecode,modprobe,ipmidump} \
+	$(addprefix github.com/u-root/u-root/cmds/boot/, $(UROOT_BOOT_CMDS)) \
+	$(addprefix github.com/u-root/u-root/cmds/exp/, $(UROOT_EXP_CMDS)) \
 
 UROOT_ADDITIONAL_CMDS ?=
 
