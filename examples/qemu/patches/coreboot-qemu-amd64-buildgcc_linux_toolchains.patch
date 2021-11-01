@@ -1,0 +1,21 @@
+diff --git a/util/crossgcc/buildgcc b/util/crossgcc/buildgcc
+index 01c3ad910b..96046968c4 100755
+--- a/util/crossgcc/buildgcc
++++ b/util/crossgcc/buildgcc
+@@ -986,13 +986,16 @@ printf "Building toolchain using %d thread(s).\n\n" "$THREADS"
+ 
+ case "$TARGETARCH" in
+ 	x86_64-elf)		;;
++	x86_64-linux)	;;
+ 	x86_64*)		TARGETARCH=x86_64-elf;;
+ 	i386-elf)		;;
+ 	i386-mingw32)		;;
+ 	riscv-elf)		TARGETARCH=riscv64-elf;;
++	riscv-linux)	TARGETARCH=riscv64-linux;;
+ 	powerpc64*-linux*)	;;
+ 	i386*)			TARGETARCH=i386-elf;;
+ 	arm*)			TARGETARCH=arm-eabi;;
++	aarch64-linux)	;;
+ 	aarch64*)		TARGETARCH=aarch64-elf;;
+ 	nds32le-elf)		;;
+ 	*)			printf "${red}WARNING: Unsupported architecture $TARGETARCH.${NC}\n\n"; ;;
