@@ -5,13 +5,14 @@
 # LICENSE file in the root directory of this source tree.
 
 ARCH ?= $(shell uname -m)
+
 ifeq ($(ARCH), x86_64)
 ARCH = amd64
 LINUX_ARCH := $(ARCH)
 LINUX_IMAGE_RELATIVE_PATH := arch/x86/boot/bzImage
+PLATFORM := qemu-amd64
+QEMU_SYSTEM := qemu-system-$(ARCH)
 endif
-
-PLATFORM := qemu-$(ARCH)
 
 OSF_BUILDER_DIR := ../..
 
@@ -20,9 +21,11 @@ CONFIGS_DIR := ./configs
 PATCHES_DIR := ./patches
 
 include $(OSF_BUILDER_DIR)/Makefile.inc
+OUT ?= build/qemu-$(ARCH)/osf-qemu-$(ARCH).rom
 
 run:
-	sudo qemu-system-x86_64 \
+ifeq ($(ARCH), amd64)
+	sudo qemu-system-$(ARCH) \
     `# the machine type specified in the coreboot mainboard configuration` \
     -M q35 \
     `# use KVM to avail of hardware virtualization extensions` \
@@ -35,3 +38,4 @@ run:
     -object rng-random,filename=/dev/urandom,id=rng0 \
     `# redirect all the output to the console` \
     -nographic
+endif
