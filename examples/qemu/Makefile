@@ -5,11 +5,16 @@
 # LICENSE file in the root directory of this source tree.
 
 ARCH ?= $(shell uname -m)
+ifneq ($(ARCH), $(shell uname -m))
+CROSS_COMPILING := 1
+else
+CROSS_COMPILING := 0
+endif
 
 ifeq ($(ARCH), x86_64)
-ARCH = amd64
 LINUX_ARCH := $(ARCH)
 LINUX_IMAGE_RELATIVE_PATH := arch/x86/boot/bzImage
+GOARCH := amd64
 PLATFORM := qemu-amd64
 QEMU_SYSTEM := qemu-system-$(ARCH)
 endif
