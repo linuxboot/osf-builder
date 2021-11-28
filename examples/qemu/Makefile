@@ -7,6 +7,7 @@
 ARCH ?= $(shell uname -m)
 ifeq ($(ARCH), x86_64)
 ARCH = amd64
+LINUX_ARCH := $(ARCH)
 endif
 
 PLATFORM := qemu-$(ARCH)
