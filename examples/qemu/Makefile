@@ -12,7 +12,9 @@ CROSS_COMPILING := 0
 endif
 
 ifeq ($(ARCH), x86_64)
+COREBOOT_TOOLCHAIN_ARCH := i386
 LINUX_ARCH := $(ARCH)
+LINUX_GCC_TUPLE := $(ARCH)-linux-
 LINUX_IMAGE_RELATIVE_PATH := arch/x86/boot/bzImage
 GOARCH := amd64
 PLATFORM := qemu-amd64

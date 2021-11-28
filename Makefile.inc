@@ -120,6 +120,13 @@ endif
 # example "x86_64-linux-gnu-gcc-10".
 ifeq ($(CROSS_COMPILING), 1)
 INITRAMFS_BUILD_GOROOT ?= /usr/local/go
+ifeq ($(shell which $(LINUX_GCC_TUPLE)gcc),)
+BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN = 1
+CROSS_COMPILE ?= $(COREBOOT_BUILD_DIR)/util/crossgcc/xgcc/bin/$(LINUX_GCC_TUPLE)
+else
+BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN = 0
+CROSS_COMPILE ?= $(LINUX_GCC_TUPLE)
+endif
 else
 # FIXME: Also need to fix behavior when we're not cross-compilng, but system's
 # go version doesn't match the version we're using to build the initramfs...
@@ -201,8 +208,8 @@ $(COREBOOT_TOOLCHAIN_OUT)/bin/iasl: $(COREBOOT_DEPS_FLAG) $(COREBOOT_PATCH_FLAG)
 	  tar xf $(COREBOOT_TOOLCHAIN_CACHE) -C $(dir $(COREBOOT_TOOLCHAIN_OUT)); \
 	  touch $@; \
 	else \
-	  COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) ARCH=$(ARCH) TOOLS_DIR=$(TOOLS_DIR) \
-	    $(TOOLS_DIR)/build_toolchain.sh; \
+	  COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) ARCH=$(COREBOOT_TOOLCHAIN_ARCH) \
+	  TOOLS_DIR=$(TOOLS_DIR) $(TOOLS_DIR)/build_toolchain.sh coreboot; \
 	fi
 
 # Creates coreboot config file using the user-provided one and feeding it to make olddefconfig.
@@ -236,11 +243,20 @@ wipe-coreboot:
 # Top-level initramfs target, for use by humans.
 kernel: $(KERNEL_OUT)
 
+kernel_toolchain: $(COREBOOT_DEPS_FLAG) $(COREBOOT_PATCH_FLAG)
+ifeq "$(BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN)" "1"
+	echo 'Building cross toolchain for Linux'
+	COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) ARCH=$(LINUX_ARCH) \
+	 TOOLS_DIR=$(TOOLS_DIR) $(TOOLS_DIR)/build_toolchain.sh linux;
+else
+	echo 'Building Linux with toolchain tuple: $(CROSS_COMPILE)'
+endif
+
 # Kernel build target. Requires initrmafs image, config and patches.
 ifneq "$(INITRAMFS_IN)" ""
-$(KERNEL_OUT): $(INITRAMFS_IN) $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG)
+$(KERNEL_OUT): $(INITRAMFS_IN) $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG) kernel_toolchain
 else
-$(KERNEL_OUT): $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG)
+$(KERNEL_OUT): $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG) $(KERNEL_TOOLCHAIN) $(KERNEL_TOOLCHAIN)
 endif
 	@# If lzma(1) is not available, kernel build will fall back to gzip and we don't want that.
 	@if ! lzma -h > /dev/null 2>/dev/null; then \
@@ -248,7 +264,7 @@ endif
 	  echo ' *** In RedHat distros it`s provided by xz-lzma-compat, in Debian/Ubuntu it`s provided by xz-utils.' >&2; \
 	  exit 1; \
 	fi
-	MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) -j$(NPROC) KCFLAGS=-pipe
+	ARCH=$(LINUX_ARCH) CROSS_COMPILE=$(CROSS_COMPILE) MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) -j$(NPROC) KCFLAGS=-pipe
 	[ "$@" = "$(KERNEL_OUT_DEFAULT)" ] || cp -v "$(KERNEL_OUT_DEFAULT)" "$@"
 
 ifeq "$(ALWAYS_BUILD_KERNEL)" "1"
@@ -258,7 +274,7 @@ endif
 $(KERNEL_CONFIG_OUT): $(KERNEL_CONFIG) $(KERNEL_DEPS_FLAG)
 	cp $(KERNEL_CONFIG) $@
 	sed -i "s|CONFIG_INITRAMFS_SOURCE=.*|CONFIG_INITRAMFS_SOURCE=\"$(INITRAMFS_IN)\"|" $@
-	MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) olddefconfig
+	ARCH=$(LINUX_ARCH) MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) olddefconfig
 
 $(KERNEL_PATCH_FLAG): $(realpath $(wildcard $(PATCHES_DIR)/kernel-*))
 	$(call patch,$(KERNEL_BUILD_DIR),$^)
