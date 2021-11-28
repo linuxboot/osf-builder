@@ -43,7 +43,7 @@ ROM_OUT ?= $(PLATFORM_BUILD_DIR)/osf-$(PLATFORM).rom
 # Absolutize CONFIGS_DIR
 CONFIGS_DIR := $(realpath $(CONFIGS_DIR))
 CONFIG ?= $(CONFIGS_DIR)/config-$(PLATFORM).json
-KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel-$(ARCH).config
+KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel-$(LINUX_ARCH).config
 COREBOOT_CONFIG ?= $(CONFIGS_DIR)/coreboot.config-$(PLATFORM)
 TOOLS_DIR := $(realpath $(OSF_BUILDER_DIR)/tools)
 URL_OVERRIDES_ABS = $(realpath $(URL_OVERRIDES))
