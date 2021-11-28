@@ -19,6 +19,9 @@ endif
 ifndef ARCH
 $(error Please define ARCH)
 endif
+ifndef LINUX_IMAGE_RELATIVE_PATH
+$(error Please define LINUX_IMAGE_RELATIVE_PATH)
+endif
 ifndef OSF_BUILDER_DIR
 $(error Please define OSF_BUILDER_DIR)
 endif
@@ -78,7 +81,7 @@ KERNEL_BUILD_DIR := $(PLATFORM_BUILD_DIR)/kernel
 KERNEL_CONFIG_OUT := $(KERNEL_BUILD_DIR)/.config
 KERNEL_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.kernel-deps
 KERNEL_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.kernel-patch
-KERNEL_OUT_DEFAULT := $(KERNEL_BUILD_DIR)/arch/x86/boot/bzImage
+KERNEL_OUT_DEFAULT := $(KERNEL_BUILD_DIR)/$(LINUX_IMAGE_RELATIVE_PATH)
 ifndef KERNEL_OUT
 KERNEL_OUT := $(KERNEL_OUT_DEFAULT)
 endif

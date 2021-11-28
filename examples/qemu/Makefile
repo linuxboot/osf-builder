@@ -8,6 +8,7 @@ ARCH ?= $(shell uname -m)
 ifeq ($(ARCH), x86_64)
 ARCH = amd64
 LINUX_ARCH := $(ARCH)
+LINUX_IMAGE_RELATIVE_PATH := arch/x86/boot/bzImage
 endif
 
 PLATFORM := qemu-$(ARCH)
