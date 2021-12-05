@@ -55,3 +55,12 @@ ifeq ($(ARCH), amd64)
     `# redirect all the output to the console` \
     -nographic
 endif
+ifeq ($(ARCH), ppc64)
+	qemu-system-$(ARCH) -M pseries,accel=kvm,kvm-type=HV -nographic -bios $(OUT)
+endif
+ifeq ($(ARCH), ppc64le)
+	qemu-system-$(ARCH) -M pseries,accel=kvm,kvm-type=HV -nographic -bios $(OUT)
+endif
+ifeq ($(ARCH), ppc64le)
+	qemu-system-$(ARCH) -M pseries,accel=kvm,kvm-type=HV -nographic -bios $(OUT)
+endif
