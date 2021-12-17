@@ -251,6 +251,7 @@ $(INITRAMFS_OUT): $(INITRAMFS_DEPS_FLAG) $(INITRAMFS_PATCH_FLAG)
 	GOPATH=$(INITRAMFS_BUILD_DIR)/gopath:$(UROOT_ADDITIONAL_GOPATH) \
 	  $(INITRAMFS_BUILD_DIR)/go/bin/go run github.com/u-root/u-root \
 	    -build=bb -o $@ -uinitcmd=$(UINIT_CMD) \
+	    $(addprefix -files=,$(BASE_FILES) $(UROOT_ADDITIONAL_FILES)) \
 	    $(UROOT_ADDITIONAL_CMDS) \
 	    $(UROOT_BASE_CMDS) \
 	  || { rm -f $@; exit 1; }
