@@ -1,0 +1,80 @@
+{
+  "initramfs": {
+    "untar": [
+      {
+        "label": "go",
+        "url": "https://golang.org/dl/go1.17.2.linux-arm64.tar.gz",
+        "hash": "sha256:a5a43c9cdabdb9f371d56951b14290eba8ce2f9b0db48fb5fc657943984fd4fc"
+      }
+    ],
+    "goget": [
+      {
+        "label": "uroot",
+        "pkg": "https://github.com/u-root/u-root",
+        "branch": "master",
+        "hash": "ba3c4503673291183f54568dc0c0d0d7411302cd"
+      }
+    ]
+  },
+  "kernel": {
+    "untar": [
+      {
+        "label": "kernel",
+        "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/snapshot/linux-5.14.14.tar.gz",
+        "hash": "sha256:7649f5496c34eae104fc391988d5dc4993082cf6195984303433bafa358fd7da",
+        "subdir": "linux-5.14.0"
+      }
+    ]
+  },
+  "coreboot": {
+    "git": [
+      {
+        "label": "coreboot",
+        "url": "https://review.coreboot.org/coreboot",
+        "branch": "master",
+        "hash": "37a977dde945de15464925d4501d4b85e01c3a16"
+      },
+      {
+        "label": "vboot",
+        "url": "https://review.coreboot.org/vboot",
+        "dest": "3rdparty/vboot",
+        "branch": "master",
+        "hash": "48195e5878006ac2cf74cb7f02953ab06c68202d"
+      }
+    ],
+    "files": {
+      "label": "crossgcc_tarballs",
+      "dest": "util/crossgcc/tarballs",
+      "filelist": [
+        {
+          "url": "https://ftpmirror.gnu.org/gmp/gmp-6.2.1.tar.xz",
+          "hash": "sha256:fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
+        },
+        {
+          "url": "https://ftpmirror.gnu.org/mpfr/mpfr-4.1.0.tar.xz",
+          "hash": "sha256:0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"
+        },
+        {
+          "url": "https://ftpmirror.gnu.org/mpc/mpc-1.2.1.tar.gz",
+          "hash": "sha256:17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
+        },
+        {
+          "url": "https://ftpmirror.gnu.org/binutils/binutils-2.37.tar.xz",
+          "hash": "sha256:820d9724f020a3e69cb337893a0b63c2db161dadcb0e06fc11dc29eb1e84a32c"
+        },
+        {
+          "url": "https://ftpmirror.gnu.org/gcc/gcc-11.2.0/gcc-11.2.0.tar.xz",
+          "hash": "sha256:d08edc536b54c372a1010ff6619dd274c0f1603aa49212ba20f7aa2cda36fa8b"
+        },
+        {
+          "url": "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2",
+          "hash": "sha256:3c4b8339e5ab54b1bcb2316101f8985a5da50a3f9e504d43fa6f35668bee2fd0"
+        },
+        {
+          "url": "https://acpica.org/sites/acpica/files/acpica-unix2-20210331.tar.gz",
+          "hash": "sha256:3dab326c262d4f3eaf380bbbbd7aa8c2eb5f2697f7821659222cf898d8be28c1"
+        }
+      ]
+    }
+  }
+}

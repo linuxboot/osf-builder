@@ -11,6 +11,15 @@ else
 CROSS_COMPILING := 0
 endif
 
+ifeq ($(ARCH), aarch64)
+COREBOOT_TOOLCHAIN_ARCH := aarch64
+LINUX_ARCH := arm64
+LINUX_GCC_TUPLE := $(ARCH)-linux-
+LINUX_IMAGE_RELATIVE_PATH := arch/arm64/boot/Image.gz
+GOARCH := arm64
+PLATFORM := qemu-$(ARCH)
+QEMU_SYSTEM := qemu-system-$(ARCH)
+endif
 ifeq ($(ARCH), x86_64)
 COREBOOT_TOOLCHAIN_ARCH := i386
 LINUX_ARCH := $(ARCH)
@@ -38,6 +47,11 @@ QEMU_COMMON_OPTS := -bios $(OUT) $(QEMU_KVM_OPTS) \
 	-nographic
 
 run:
+ifeq ($(ARCH), aarch64)
+	$(QEMU_SYSTEM) $(QEMU_COMMON_OPTS) \
+	-M virt,secure=on,virtualization=on \
+	-cpu cortex-a53
+endif
 ifeq ($(ARCH), x86_64)
 	$(QEMU_SYSTEM) $(QEMU_COMMON_OPTS) \
 	-M q35
