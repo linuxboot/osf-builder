@@ -28,7 +28,7 @@ CONFIGS_DIR := ./configs
 PATCHES_DIR := ./patches
 
 include $(OSF_BUILDER_DIR)/Makefile.inc
-OUT ?= build/qemu-$(ARCH)/osf-qemu-$(ARCH).rom
+OUT ?= build/$(PLATFORM)/osf-$(PLATFORM).rom
 
 run:
 ifeq ($(ARCH), amd64)
