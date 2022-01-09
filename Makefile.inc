@@ -16,6 +16,12 @@ MAKEFLAGS += --warn-undefined-variables
 ifndef PLATFORM
 $(error Please define PLATFORM)
 endif
+ifndef ARCH
+$(error Please define ARCH)
+endif
+ifndef LINUX_IMAGE_RELATIVE_PATH
+$(error Please define LINUX_IMAGE_RELATIVE_PATH)
+endif
 ifndef OSF_BUILDER_DIR
 $(error Please define OSF_BUILDER_DIR)
 endif
@@ -25,6 +31,7 @@ endif
 ifndef PATCHES_DIR
 $(error Please define PATCHES_DIR)
 endif
+
 # If defined, specifies URL overrides to be applied when fetching deps.
 URL_OVERRIDES ?=
 # Version of the firmware being built.
@@ -39,7 +46,7 @@ ROM_OUT ?= $(PLATFORM_BUILD_DIR)/osf-$(PLATFORM).rom
 # Absolutize CONFIGS_DIR
 CONFIGS_DIR := $(realpath $(CONFIGS_DIR))
 CONFIG ?= $(CONFIGS_DIR)/config-$(PLATFORM).json
-KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel.config
+KERNEL_CONFIG ?= $(CONFIGS_DIR)/kernel-$(LINUX_ARCH).config
 COREBOOT_CONFIG ?= $(CONFIGS_DIR)/coreboot.config-$(PLATFORM)
 TOOLS_DIR := $(realpath $(OSF_BUILDER_DIR)/tools)
 URL_OVERRIDES_ABS = $(realpath $(URL_OVERRIDES))
@@ -65,7 +72,7 @@ INITRAMFS_BUILD_DIR := $(PLATFORM_BUILD_DIR)/initramfs
 INITRAMFS_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.initramfs-deps
 INITRAMFS_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.initramfs-patch
 ifndef INITRAMFS_OUT
-INITRAMFS_OUT := $(INITRAMFS_BUILD_DIR)/initramfs_linuxboot.amd64.cpio
+INITRAMFS_OUT := $(INITRAMFS_BUILD_DIR)/initramfs_linuxboot.$(GOARCH).cpio
 endif
 # By default, build initramfs but a prebuilt one can be provided via INITRAMFS_IN.
 INITRAMFS_IN ?= $(INITRAMFS_OUT)
@@ -74,7 +81,7 @@ KERNEL_BUILD_DIR := $(PLATFORM_BUILD_DIR)/kernel
 KERNEL_CONFIG_OUT := $(KERNEL_BUILD_DIR)/.config
 KERNEL_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.kernel-deps
 KERNEL_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.kernel-patch
-KERNEL_OUT_DEFAULT := $(KERNEL_BUILD_DIR)/arch/x86/boot/bzImage
+KERNEL_OUT_DEFAULT := $(KERNEL_BUILD_DIR)/$(LINUX_IMAGE_RELATIVE_PATH)
 ifndef KERNEL_OUT
 KERNEL_OUT := $(KERNEL_OUT_DEFAULT)
 endif
@@ -89,9 +96,43 @@ COREBOOT_DEPS_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-deps
 COREBOOT_PATCH_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-patch
 COREBOOT_TOOLCHAIN_FLAG := $(PLATFORM_BUILD_DIR)/.coreboot-toolchain
 COREBOOT_TOOLCHAIN_CACHE_ENABLE ?= 1
+COREBOOT_VPD_SUPPORT ?= 1
 # coreboot Intel blobs
 ifdef COREBOOT_BLOBS_DIR
 COREBOOT_BLOBS_DIR := $(realpath $(COREBOOT_BLOBS_DIR))
+endif
+
+# FIXME: Go needs to be run on the host architecture (GOARCH is used for cross-
+# compiling Go programs). However, the target platform's config will likely want
+# to use a Go tarball for that target architecture. For now, override this with
+# whatever the host has installed. THIS IS A GROSS HACK.
+#
+# We might change the json schema to specify only Go version, but not point at
+# a particular tarball (which includes architecture in the name). This would
+# also require changing the download verification scheme to something like GPG
+# signature instead of sha255sum, since the hash will obviously be different
+# among tarballs for different architectures.
+#
+# FIXME #2: It's not clear if we want to always use the coreboot toolchain when
+# cross compiling Linux. It's certainly an easy approach, though.
+#
+# FIXME #3: Some distros add the version number of the tool as a suffix, for
+# example "x86_64-linux-gnu-gcc-10".
+ifeq ($(CROSS_COMPILING), 1)
+INITRAMFS_BUILD_GOROOT ?= /usr/local/go
+ifeq ($(shell which $(LINUX_GCC_TUPLE)gcc),)
+BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN = 1
+CROSS_COMPILE ?= $(COREBOOT_BUILD_DIR)/util/crossgcc/xgcc/bin/$(LINUX_GCC_TUPLE)
+else
+BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN = 0
+CROSS_COMPILE ?= $(LINUX_GCC_TUPLE)
+endif
+else
+CROSS_COMPILE =
+# FIXME: Also need to fix behavior when we're not cross-compilng, but system's
+# go version doesn't match the version we're using to build the initramfs...
+#INITRAMFS_BUILD_GOROOT ?= $(INITRAMFS_BUILD_DIR)/go
+INITRAMFS_BUILD_GOROOT ?= /usr/local/go
 endif
 
 UROOT_BOOT_CMDS := fbnetboot localboot systemboot
@@ -116,9 +157,11 @@ build: $(ROM_OUT)
 
 # Main output product - firmware with VPD variables.
 $(ROM_OUT): $(COREBOOT_OUT)
+ifeq "$(COREBOOT_VPD_SUPPORT)" "1"
 	$(VPD_TOOL) -f "$<" -O -i RO_VPD -s internal_versions="`cat $(FINAL_CONFIG_OUT)`"
 	[ -z "$(VERSION)" ] || $(VPD_TOOL) -f "$<" -i RO_VPD -s firmware_version=$(VERSION)
 	$(VPD_TOOL) -f "$<" -O -i RW_VPD || true # Format RW_VPD region, if present.
+endif
 	cp "$<" "$@"
 	@echo '***' >&2
 	@echo '*** Build done, $@' >&2
@@ -166,8 +209,8 @@ $(COREBOOT_TOOLCHAIN_OUT)/bin/iasl: $(COREBOOT_DEPS_FLAG) $(COREBOOT_PATCH_FLAG)
 	  tar xf $(COREBOOT_TOOLCHAIN_CACHE) -C $(dir $(COREBOOT_TOOLCHAIN_OUT)); \
 	  touch $@; \
 	else \
-	  COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) TOOLS_DIR=$(TOOLS_DIR) \
-	    $(TOOLS_DIR)/build_toolchain.sh; \
+	  COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) ARCH=$(COREBOOT_TOOLCHAIN_ARCH) \
+	  TOOLS_DIR=$(TOOLS_DIR) $(TOOLS_DIR)/build_toolchain.sh coreboot; \
 	fi
 
 # Creates coreboot config file using the user-provided one and feeding it to make olddefconfig.
@@ -201,11 +244,20 @@ wipe-coreboot:
 # Top-level initramfs target, for use by humans.
 kernel: $(KERNEL_OUT)
 
+kernel_toolchain: $(COREBOOT_DEPS_FLAG) $(COREBOOT_PATCH_FLAG)
+ifeq "$(BUILD_LINUX_WITH_COREBOOT_TOOLCHAIN)" "1"
+	echo 'Building cross toolchain for Linux'
+	COREBOOT_BUILD_DIR=$(COREBOOT_BUILD_DIR) CPUS=$(NPROC) MAKE=$(MAKE) ARCH=$(LINUX_ARCH) \
+	 TOOLS_DIR=$(TOOLS_DIR) $(TOOLS_DIR)/build_toolchain.sh linux;
+else
+	echo 'Building Linux with toolchain tuple: $(CROSS_COMPILE)'
+endif
+
 # Kernel build target. Requires initrmafs image, config and patches.
 ifneq "$(INITRAMFS_IN)" ""
-$(KERNEL_OUT): $(INITRAMFS_IN) $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG)
+$(KERNEL_OUT): $(INITRAMFS_IN) $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG) kernel_toolchain
 else
-$(KERNEL_OUT): $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG)
+$(KERNEL_OUT): $(KERNEL_CONFIG_OUT) $(KERNEL_PATCH_FLAG) $(KERNEL_TOOLCHAIN) $(KERNEL_TOOLCHAIN)
 endif
 	@# If lzma(1) is not available, kernel build will fall back to gzip and we don't want that.
 	@if ! lzma -h > /dev/null 2>/dev/null; then \
@@ -213,7 +265,7 @@ endif
 	  echo ' *** In RedHat distros it`s provided by xz-lzma-compat, in Debian/Ubuntu it`s provided by xz-utils.' >&2; \
 	  exit 1; \
 	fi
-	MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) -j$(NPROC) KCFLAGS=-pipe
+	ARCH=$(LINUX_ARCH) CROSS_COMPILE=$(CROSS_COMPILE) MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) -j$(NPROC) KCFLAGS=-pipe
 	[ "$@" = "$(KERNEL_OUT_DEFAULT)" ] || cp -v "$(KERNEL_OUT_DEFAULT)" "$@"
 
 ifeq "$(ALWAYS_BUILD_KERNEL)" "1"
@@ -223,7 +275,7 @@ endif
 $(KERNEL_CONFIG_OUT): $(KERNEL_CONFIG) $(KERNEL_DEPS_FLAG)
 	cp $(KERNEL_CONFIG) $@
 	sed -i "s|CONFIG_INITRAMFS_SOURCE=.*|CONFIG_INITRAMFS_SOURCE=\"$(INITRAMFS_IN)\"|" $@
-	MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) olddefconfig
+	ARCH=$(LINUX_ARCH) MAKEFLAGS= $(MAKE) -C $(KERNEL_BUILD_DIR) olddefconfig
 
 $(KERNEL_PATCH_FLAG): $(realpath $(wildcard $(PATCHES_DIR)/kernel-*))
 	$(call patch,$(KERNEL_BUILD_DIR),$^)
@@ -246,10 +298,11 @@ initramfs: $(INITRAMFS_OUT)
 # Initramfs build target.
 $(INITRAMFS_OUT): $(INITRAMFS_DEPS_FLAG) $(INITRAMFS_PATCH_FLAG)
 	GO111MODULE=off \
-	GOROOT=$(INITRAMFS_BUILD_DIR)/go \
+	GOARCH=$(GOARCH) \
+	GOROOT=$(INITRAMFS_BUILD_GOROOT) \
 	GOCACHE=$(INITRAMFS_BUILD_DIR)/go/.cache \
 	GOPATH=$(INITRAMFS_BUILD_DIR)/gopath:$(UROOT_ADDITIONAL_GOPATH) \
-	  $(INITRAMFS_BUILD_DIR)/go/bin/go run github.com/u-root/u-root \
+	  $(GOROOT)/bin/go run github.com/u-root/u-root \
 	    -build=bb -o $@ -uinitcmd=$(UINIT_CMD) \
 	    $(addprefix -files=,$(BASE_FILES) $(UROOT_ADDITIONAL_FILES)) \
 	    $(UROOT_ADDITIONAL_CMDS) \
