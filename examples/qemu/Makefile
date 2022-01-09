@@ -20,6 +20,15 @@ GOARCH := arm64
 PLATFORM := qemu-$(ARCH)
 QEMU_SYSTEM := qemu-system-$(ARCH)
 endif
+ifeq ($(ARCH), ppc64le)
+COREBOOT_TOOLCHAIN_ARCH=$(ARCH)
+GOARCH := $(ARCH)
+LINUX_ARCH := powerpc
+LINUX_IMAGE_RELATIVE_PATH := arch/powerpc/boot/zImage
+LINUX_GCC_TUPLE := powerpc64-linux-gnu-
+PLATFORM := qemu-$(ARCH)
+QEMU_SYSTEM := qemu-system-$(ARCH)
+endif
 ifeq ($(ARCH), x86_64)
 COREBOOT_TOOLCHAIN_ARCH := i386
 LINUX_ARCH := $(ARCH)
@@ -51,6 +60,14 @@ ifeq ($(ARCH), aarch64)
 	$(QEMU_SYSTEM) $(QEMU_COMMON_OPTS) \
 	-M virt,secure=on,virtualization=on \
 	-cpu cortex-a53
+endif
+ifeq ($(ARCH), ppc64le)
+	$(QEMU_SYSTEM) $(QEMU_COMMON_OPTS) \
+	-M powernv,hb-mode=on \
+	-cpu power9 \
+	-drive file=build/coreboot.rom,if=mtd \
+	-serial stdio \
+	-display none
 endif
 ifeq ($(ARCH), x86_64)
 	$(QEMU_SYSTEM) $(QEMU_COMMON_OPTS) \
