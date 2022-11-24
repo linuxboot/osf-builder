@@ -119,6 +119,7 @@ $(ROM_OUT): $(COREBOOT_OUT)
 	$(VPD_TOOL) -f "$<" -O -i RO_VPD -s internal_versions="`cat $(FINAL_CONFIG_OUT)`"
 	[ -z "$(VERSION)" ] || $(VPD_TOOL) -f "$<" -i RO_VPD -s firmware_version=$(VERSION)
 	$(VPD_TOOL) -f "$<" -O -i RW_VPD || true # Format RW_VPD region, if present.
+	[ -f "$(CURDIR)/vpd.sh" ] && bash "$(CURDIR)/vpd.sh" || echo "$(CURDIR)/vpd.sh doesn't exist"
 	cp "$<" "$@"
 	@echo '***' >&2
 	@echo '*** Build done, $@' >&2
