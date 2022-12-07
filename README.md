@@ -51,6 +51,7 @@ Entire build requires `PLATFORM` to be defined, this specifies the platform for 
  * `make wipe` will wipe everything, including downloaded deps.
    * `make wipe-coreboot` and `make wipe-kernel` will clean just the coreboot and kernel components.
    * Note that toolchain cache survives wipe and will be used in the next build.
+* You can place a shell script vpd.sh under your project folder which would be executed for your customized actions such as setting your VPD key-value pairs to your coreboot image.
 
 ## License
 
