@@ -51,8 +51,10 @@ Entire build requires `PLATFORM` to be defined, this specifies the platform for 
  * `make wipe` will wipe everything, including downloaded deps.
    * `make wipe-coreboot` and `make wipe-kernel` will clean just the coreboot and kernel components.
    * Note that toolchain cache survives wipe and will be used in the next build.
+ * `make kernel` will only build LinuxBoot payload.
 * You can place a shell script vpd.sh under your project folder which would be executed for your customized actions such as setting your VPD key-value pairs to your coreboot image.
-
+* When the json configuration files' mtime is changed, osf-builder would trigger a full wipe of your downloaded coreboot, u-root and kernel code. To avoid this you can update the mtime of all the $(PLATFORM_BUILD_DIR)/.*-deps, for exmaple
+   * `cd build/qemu-x86_64` and `touch .*-deps` will update the mtime of .*-deps files.
 ## License
 
 OSF Builder is MIT licensed, as found in the LICENSE file.
