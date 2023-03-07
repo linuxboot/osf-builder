@@ -307,7 +307,7 @@ $(PLATFORM_BUILD_DIR)/.%-deps: $(CONFIG) $(GETDEPS_TOOL) $(ALL_CONFIGS)
 	touch $@
 
 define patch  # dir,patches
-	[ -z "$2" ] || { cd $1 && for p in $2; do patch -p 1 -N -b --verbose -i $$p; done }
+	[ -z "$2" ] || { cd $1 && for p in $2; do patch -d gopath/src/github.com/u-root/u-root -p 1 -N -b --verbose -i $$p; done }
 endef
 
 clean: clean-initramfs clean-kernel clean-coreboot
