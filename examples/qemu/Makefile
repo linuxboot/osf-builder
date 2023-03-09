@@ -11,6 +11,8 @@ OSF_BUILDER_DIR := ../..
 # CONFIG, KERNEL_CONFIG and COREBOOT_CONFIG are derived from CONFIGS_DIR and PLATFORM.
 CONFIGS_DIR := ./configs
 PATCHES_DIR := ./patches
+UROOT_ADDITIONAL_CMDS := \
+	github.com/u-root/u-root/cmds/boot/boot
 
 include $(OSF_BUILDER_DIR)/Makefile.inc
 
