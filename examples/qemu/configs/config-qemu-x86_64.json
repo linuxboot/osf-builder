@@ -3,8 +3,8 @@
     "untar": [
       {
         "label": "go",
-        "url": "https://golang.org/dl/go1.17.6.linux-amd64.tar.gz",
-        "hash": "sha256:231654bbf2dab3d86c1619ce799e77b03d96f9b50770297c8f4dff8836fc8ca2"
+        "url": "https://golang.org/dl/go1.20.3.linux-amd64.tar.gz",
+        "hash": "sha256:979694c2c25c735755bf26f4f45e19e64e4811d661dd07b8c010f7a8e18adfca"
       }
     ],
     "goget": [
@@ -12,7 +12,7 @@
         "label": "uroot",
         "pkg": "https://github.com/u-root/u-root",
         "branch": "master",
-        "hash": "8278674a41e9ca22d9f3fff33d7eb8439acb4bf9"
+        "hash": "09109ff243c1ad70620e1249aae7cd66e094343a"
       }
     ]
   },
