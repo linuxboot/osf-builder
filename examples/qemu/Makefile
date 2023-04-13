@@ -12,7 +12,7 @@ OSF_BUILDER_DIR := ../..
 CONFIGS_DIR := ./configs
 PATCHES_DIR := ./patches
 UROOT_ADDITIONAL_CMDS := \
-	github.com/u-root/u-root/cmds/boot/boot
+	cmds/boot/boot
 
 include $(OSF_BUILDER_DIR)/Makefile.inc
 

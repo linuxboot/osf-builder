@@ -98,8 +98,8 @@ UROOT_BOOT_CMDS := fbnetboot localboot systemboot
 UROOT_EXP_CMDS := cbmem dmidecode modprobe ipmidump
 UROOT_BASE_CMDS ?= \
 	core \
-	$(addprefix github.com/u-root/u-root/cmds/boot/, $(UROOT_BOOT_CMDS)) \
-	$(addprefix github.com/u-root/u-root/cmds/exp/, $(UROOT_EXP_CMDS)) \
+	$(addprefix cmds/boot/, $(UROOT_BOOT_CMDS)) \
+	$(addprefix cmds/exp/, $(UROOT_EXP_CMDS)) \
 
 UROOT_ADDITIONAL_CMDS ?=
 
@@ -252,8 +252,9 @@ $(INITRAMFS_OUT): $(INITRAMFS_DEPS_FLAG) $(INITRAMFS_PATCH_FLAG)
 	GOROOT=$(INITRAMFS_BUILD_DIR)/go \
 	GOCACHE=$(INITRAMFS_BUILD_DIR)/go/.cache \
 	GOPATH=$(INITRAMFS_BUILD_DIR)/gopath:$(UROOT_ADDITIONAL_GOPATH) \
+	GBB_PATH=$(INITRAMFS_BUILD_DIR)/gopath/src/github.com/u-root/u-root \
 	  $(INITRAMFS_BUILD_DIR)/go/bin/go run github.com/u-root/u-root \
-	    -build=bb -uroot-source $(INITRAMFS_BUILD_DIR)/gopath/src/github.com/u-root/u-root -o $@ -uinitcmd=$(UINIT_CMD) \
+	    -build=bb -o $@ -uinitcmd=$(UINIT_CMD) \
 	    $(addprefix -files=,$(BASE_FILES) $(UROOT_ADDITIONAL_FILES)) \
 	    $(UROOT_ADDITIONAL_CMDS) \
 	    $(UROOT_BASE_CMDS) \
