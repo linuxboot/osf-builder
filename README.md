@@ -6,7 +6,7 @@ community to collaborate on Open System Firmware (OSF).
 ## Build pre-requisites
 
  * GNU make
- * Go 1.x
+ * Go version needs to be >=1.19. for u-root compatibility after v0.10.0
 
 ## Build process
 
