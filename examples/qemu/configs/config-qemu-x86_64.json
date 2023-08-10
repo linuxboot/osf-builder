@@ -71,7 +71,7 @@
           "hash": "sha256:3c4b8339e5ab54b1bcb2316101f8985a5da50a3f9e504d43fa6f35668bee2fd0"
         },
         {
-          "url": "https://acpica.org/sites/acpica/files/acpica-unix2-20200925.tar.gz",
+          "url": "https://downloadmirror.intel.com/774865/acpica-unix2-20200925.tar.gz",
           "hash": "sha256:5cb40ff01aaf27caf639e9928bab02706c3d7bff649f16e32d48bee99208c6a2"
         }
       ]
