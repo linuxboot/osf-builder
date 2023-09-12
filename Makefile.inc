@@ -6,7 +6,7 @@
 # LICENSE file in the root directory of this source tree.
 
 # This file should be paramterized and included by platform Makefile.
-# See `examples/qemu/Makefile` for one.
+# See `examples/qemu-x86_64/Makefile` for one.
 
 MAKEFLAGS += --warn-undefined-variables
 .PHONY: always-build build clean clean-coreboot clean-initramfs clean-kernel coreboot-toolchain initramfs kernel wipe wipe-initramfs wipe-coreboot wipe-kernel
