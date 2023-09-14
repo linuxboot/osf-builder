@@ -38,7 +38,7 @@ Entire build requires `PLATFORM` to be defined, this specifies the platform for 
 ## How to build the sample project
 
 * Clone the repo.
-* cd examples/qemu
+* cd examples/qemu-x86_64
 * Run `make`
 * Once the build is completed, run `make run`, it will start a VM with the OSF BIOS image.
 
